@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  vmImage: 'windows-latest'
+  name: TestDockerPool
 
 variables:
 - name: AzureSubscription
