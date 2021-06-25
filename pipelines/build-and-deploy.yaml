@@ -16,7 +16,7 @@ steps:
 #    ScriptPath: 'scripts\build-image.ps1'
 #    ScriptArguments: '-Location "$(Location)" -PackerFile "$(PackerFile)" -ClientId "$(ClientId)" -ClientSecret "$(ClientSecret)" -TenantId "$(TenantId)" -SubscriptionId "$(SubscriptionId)" -ObjectId "$(ObjectId)" -ManagedImageResourceGroupName "$(ManagedImageResourceGroupName)" -ManagedImageName "$(ManagedImageName)"'
 #    azurePowerShellVersion: 'LatestVersion'
-#- task: AzurePowerShell@2
+- task: AzurePowerShell@2
   displayName: 'Deploy Azure Scale Set VM'
   inputs:
     azureSubscription: $(AzureSubscription)
