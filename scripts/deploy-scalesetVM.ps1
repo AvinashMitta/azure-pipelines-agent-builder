@@ -6,7 +6,8 @@ Param(
     [string]$ManagedImageName,
     [string]$AgentPoolResourceGroup,
     [string]$ScaleSetName,
-    [string]$Location
+    [string]$Location,
+    [string]$SubscriptionId
 )
 
 Set-StrictMode -Version Latest
@@ -36,74 +37,17 @@ $vnet = New-AzureRmVirtualNetwork `
     -Subnet $subnet `
     -Force
 
-Write-Output "Create a public IP address"
-$publicIP = New-AzureRmPublicIpAddress `
-    -ResourceGroupName $AgentPoolResourceGroup `
-    -Location $Location `
-    -AllocationMethod Static `
-    -Name "LoadBalancerPublicIP" `
-    -Force
-
-Write-Output "Create a frontend and backend IP pool"
-$frontendIP = New-AzureRmLoadBalancerFrontendIpConfig `
-    -Name "FrontEndPool" `
-    -PublicIpAddress $publicIP
-$backendPool = New-AzureRmLoadBalancerBackendAddressPoolConfig `
-    -Name "BackEndPool"
-
-Write-Output "Create a Network Address Translation (NAT) pool"
-$inboundNATPool = New-AzureRmLoadBalancerInboundNatPoolConfig `
-    -Name "RDPRule" `
-    -FrontendIpConfigurationId $frontendIP.Id `
-    -Protocol TCP `
-    -FrontendPortRangeStart 50001 `
-    -FrontendPortRangeEnd 59999 `
-    -BackendPort 3389
-
-Write-Output "Create the load balancer"
-$lb = New-AzureRmLoadBalancer `
-    -ResourceGroupName $AgentPoolResourceGroup `
-    -Name "LoadBalancer" `
-    -Location $Location `
-    -FrontendIpConfiguration $frontendIP `
-    -BackendAddressPool $backendPool `
-    -InboundNatPool $inboundNATPool `
-    -Force
-
-Write-Output "Create a load balancer health probe on port 80"
-Add-AzureRmLoadBalancerProbeConfig -Name "HealthProbe" `
-    -LoadBalancer $lb `
-    -Protocol TCP `
-    -Port 80 `
-    -IntervalInSeconds 15 `
-    -ProbeCount 2
-
-Write-Output "Create a load balancer rule to distribute traffic on port 80"
-Add-AzureRmLoadBalancerRuleConfig `
-    -Name "LoadBalancerRule" `
-    -LoadBalancer $lb `
-    -FrontendIpConfiguration $lb.FrontendIpConfigurations[0] `
-    -BackendAddressPool $lb.BackendAddressPools[0] `
-    -Protocol TCP `
-    -FrontendPort 80 `
-    -BackendPort 80
-
-Write-Output "Update the load balancer configuration"
-Set-AzureRmLoadBalancer -LoadBalancer $lb
-
 Write-Output "Create IP address configurations"
 $ipConfig = New-AzureRmVmssIpConfig `
     -Name "IPConfig" `
-    -LoadBalancerBackendAddressPoolsId $lb.BackendAddressPools[0].Id `
-    -LoadBalancerInboundNatPoolsId $inboundNATPool.Id `
     -SubnetId $vnet.Subnets[0].Id
 
 Write-Output "Create a vmss config"
 $vmssConfig = New-AzureRmVmssConfig `
     -Location $Location `
-    -SkuCapacity 1 `
-    -SkuName "Standard_B2s" `
-    -UpgradePolicyMode Automatic
+    -SkuCapacity 3 `
+    -SkuName "Standard_DS2" `
+    -UpgradePolicyMode Manual 
 
 Write-Output "Set the VM image"
 $image = Get-AzureRMImage -ImageName $ManagedImageName -ResourceGroupName $ManagedImageResourceGroupName
@@ -114,10 +58,14 @@ Set-AzureRmVmssStorageProfile $vmssConfig `
     -OsDiskOsType Windows `
     -ImageReferenceId $image.id
 
+$Ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToCoTaskMemUnicode($VMUserPassword)
+$Password = [System.Runtime.InteropServices.Marshal]::PtrToStringUni($Ptr)
+[System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemUnicode($Ptr)
+
 Write-Output "Set up information for authenticating with the virtual machine"
 Set-AzureRmVmssOsProfile $vmssConfig `
     -AdminUsername $VMUserName `
-    -AdminPassword $VMUserPassword `
+    -AdminPassword $Password `
     -ComputerNamePrefix $VMName
 
 Write-Output "Attach the virtual network to the config object"
@@ -127,8 +75,51 @@ Add-AzureRmVmssNetworkInterfaceConfiguration `
     -Primary $true `
     -IPConfiguration $ipConfig
 
+
+
 Write-Output "Create the scale set with the config object (this step might take a few minutes)"
 New-AzureRmVmss `
     -ResourceGroupName $AgentPoolResourceGroup `
     -Name $ScaleSetName `
     -VirtualMachineScaleSet $vmssConfig
+
+    Write-output  "Attach Auto Scale config object"
+    $myRuleScaleOut = New-AzureRmAutoscaleRule `
+    -MetricName "Percentage CPU" `
+    -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -TimeGrain 00:01:00 `
+    -MetricStatistic "Average" `
+    -TimeWindow 00:05:00 `
+    -Operator "GreaterThan" `
+    -Threshold 70 `
+    -ScaleActionDirection "Increase" `
+    -ScaleActionScaleType "ChangeCount" `
+    -ScaleActionValue 3 `
+    -ScaleActionCooldown 00:05:00
+  
+      $myRuleScaleIn = New-AzureRmAutoscaleRule `
+      -MetricName "Percentage CPU" `
+      -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+      -Operator "LessThan" `
+      -MetricStatistic "Average" `
+      -Threshold 30 `
+      -TimeGrain 00:01:00 `
+      -TimeWindow 00:05:00 `
+      -ScaleActionCooldown 00:05:00 `
+      -ScaleActionDirection "Decrease" `
+      -ScaleActionScaleType "ChangeCount" `
+      -ScaleActionValue 1
+  
+      $myScaleProfile = New-AzureRmAutoscaleProfile `
+    -DefaultCapacity 2  `
+    -MaximumCapacity 10 `
+    -MinimumCapacity 2 `
+    -Rule $myRuleScaleOut,$myRuleScaleIn `
+    -Name "autoaviprofile"
+  
+    Add-AzureRmAutoscaleSetting `
+    -Location $myLocation `
+    -Name "autosetting" `
+    -ResourceGroup $myResourceGroup `
+    -TargetResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -AutoscaleProfile $myScaleProfile
