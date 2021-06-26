@@ -118,6 +118,6 @@ New-AzureRmVmss `
     Add-AzureRmAutoscaleSetting `
     -Location $Location `
     -Name "autosetting" `
-    -ResourceGroup $myResourceGroup `
+    -ResourceGroup $AgentPoolResourceGroup `
     -TargetResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
     -AutoscaleProfile $myScaleProfile
