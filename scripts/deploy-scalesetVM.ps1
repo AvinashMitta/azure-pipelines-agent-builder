@@ -58,14 +58,12 @@ Set-AzureRmVmssStorageProfile $vmssConfig `
     -OsDiskOsType Windows `
     -ImageReferenceId $image.id
 
-$Ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToCoTaskMemUnicode($VMUserPassword)
-$Password = [System.Runtime.InteropServices.Marshal]::PtrToStringUni($Ptr)
-[System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemUnicode($Ptr)
+
 
 Write-Output "Set up information for authenticating with the virtual machine"
 Set-AzureRmVmssOsProfile $vmssConfig `
     -AdminUsername $VMUserName `
-    -AdminPassword $Password `
+    -AdminPassword $VMUserPassword `
     -ComputerNamePrefix $VMName
 
 Write-Output "Attach the virtual network to the config object"
