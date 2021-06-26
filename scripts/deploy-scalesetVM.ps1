@@ -84,7 +84,7 @@ New-AzureRmVmss `
 Write-output  "Attach Auto Scale config object"
 $myRuleScaleOut = New-AzureRmAutoscaleRule `
     -MetricName "Percentage CPU" `
-    -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -MetricResourceId "/subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName" `
     -TimeGrain 00:01:00 `
     -MetricStatistic "Average" `
     -TimeWindow 00:05:00 `
@@ -97,7 +97,7 @@ $myRuleScaleOut = New-AzureRmAutoscaleRule `
   
 $myRuleScaleIn = New-AzureRmAutoscaleRule `
     -MetricName "Percentage CPU" `
-    -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -MetricResourceId "/subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName" `
     -Operator "LessThan" `
     -MetricStatistic "Average" `
     -Threshold 30 `
@@ -119,5 +119,5 @@ Add-AzureRmAutoscaleSetting `
     -Location $Location `
     -Name "autosetting" `
     -ResourceGroup $AgentPoolResourceGroup `
-    -TargetResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -TargetResourceId "/subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName" `
     -AutoscaleProfile $myScaleProfile
