@@ -81,8 +81,8 @@ New-AzureRmVmss `
     -Name $ScaleSetName `
     -VirtualMachineScaleSet $vmssConfig
 
-    Write-output  "Attach Auto Scale config object"
-    $myRuleScaleOut = New-AzureRmAutoscaleRule `
+Write-output  "Attach Auto Scale config object"
+$myRuleScaleOut = New-AzureRmAutoscaleRule `
     -MetricName "Percentage CPU" `
     -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
     -TimeGrain 00:01:00 `
@@ -95,27 +95,27 @@ New-AzureRmVmss `
     -ScaleActionValue 3 `
     -ScaleActionCooldown 00:05:00
   
-      $myRuleScaleIn = New-AzureRmAutoscaleRule `
-      -MetricName "Percentage CPU" `
-      -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
-      -Operator "LessThan" `
-      -MetricStatistic "Average" `
-      -Threshold 30 `
-      -TimeGrain 00:01:00 `
-      -TimeWindow 00:05:00 `
-      -ScaleActionCooldown 00:05:00 `
-      -ScaleActionDirection "Decrease" `
-      -ScaleActionScaleType "ChangeCount" `
-      -ScaleActionValue 1
+$myRuleScaleIn = New-AzureRmAutoscaleRule `
+    -MetricName "Percentage CPU" `
+    -MetricResourceId /subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName `
+    -Operator "LessThan" `
+    -MetricStatistic "Average" `
+    -Threshold 30 `
+    -TimeGrain 00:01:00 `
+    -TimeWindow 00:05:00 `
+    -ScaleActionCooldown 00:05:00 `
+    -ScaleActionDirection "Decrease" `
+    -ScaleActionScaleType "ChangeCount" `
+    -ScaleActionValue 1
   
-      $myScaleProfile = New-AzureRmAutoscaleProfile `
+$myScaleProfile = New-AzureRmAutoscaleProfile `
     -DefaultCapacity 2  `
     -MaximumCapacity 10 `
     -MinimumCapacity 2 `
-    -Rule $myRuleScaleOut,$myRuleScaleIn `
+    -Rule $myRuleScaleOut, $myRuleScaleIn `
     -Name "autoaviprofile"
   
-    Add-AzureRmAutoscaleSetting `
+Add-AzureRmAutoscaleSetting `
     -Location $Location `
     -Name "autosetting" `
     -ResourceGroup $AgentPoolResourceGroup `
