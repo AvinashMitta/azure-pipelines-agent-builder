@@ -22,7 +22,7 @@ steps:
     azureSubscription: $(AzureSubscription)
     ScriptType: 'FilePath'
     ScriptPath: 'scripts\deploy-scalesetVM.ps1'
-    ScriptArguments: '-Location "$(Location)" -VMUserName "$(VMUserName)" -VMUserPassword "$(VMUserPassword)" -VMName "$(VMName)" -AgentPoolResourceGroup "$(AgentPoolResourceGroup)" -ScaleSetName "$(ScaleSetName)" -ManagedImageResourceGroupName "$(ManagedImageResourceGroupName)" -ManagedImageName "$(ManagedImageName)"'
+    ScriptArguments: '-Location "$(Location)" -VMUserName "$(VMUserName)" -VMUserPassword "$(VMUserPassword)" -VMName "$(VMName)" -AgentPoolResourceGroup "$(AgentPoolResourceGroup)" -ScaleSetName "$(ScaleSetName)" -ManagedImageResourceGroupName "$(ManagedImageResourceGroupName)" -ManagedImageName "$(ManagedImageName)" -SubscriptionId "$(SubscriptionId)"'
     azurePowerShellVersion: 'LatestVersion' 
 #- task: AzurePowerShell@2
 #  displayName: 'Deploy Azure DevOps Agent'
