@@ -1,4 +1,4 @@
-trigger: none
+trigger: non
 
 pool:
   vmimage: windows-latest
