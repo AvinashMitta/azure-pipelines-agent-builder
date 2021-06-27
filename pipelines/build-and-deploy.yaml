@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  vmimage: windows-latest
+  vmimage: windows-lates
 
 variables:
 - name: AzureSubscription
