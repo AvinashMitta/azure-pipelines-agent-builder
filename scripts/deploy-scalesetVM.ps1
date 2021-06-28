@@ -109,15 +109,15 @@ $myRuleScaleIn = New-AzureRmAutoscaleRule `
     -ScaleActionValue 1
   
 $myScaleProfile = New-AzureRmAutoscaleProfile `
-    -DefaultCapacity 2  `
+    -DefaultCapacity 1  `
     -MaximumCapacity 10 `
-    -MinimumCapacity 2 `
+    -MinimumCapacity 1 `
     -Rule $myRuleScaleOut, $myRuleScaleIn `
-    -Name "autoaviprofile"
+    -Name "Nova-autoscale-profile"
   
 Add-AzureRmAutoscaleSetting `
     -Location $Location `
-    -Name "autosetting" `
+    -Name "Nova-auto-setting" `
     -ResourceGroup $AgentPoolResourceGroup `
     -TargetResourceId "/subscriptions/$SubscriptionId/resourceGroups/$AgentPoolResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/$ScaleSetName" `
     -AutoscaleProfile $myScaleProfile
