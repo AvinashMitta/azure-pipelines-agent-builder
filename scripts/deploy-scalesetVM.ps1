@@ -25,7 +25,7 @@ New-AzureRmResourceGroup -Name $AgentPoolResourceGroup -Location $Location
 
 Write-Output "Create a virtual network subnet"
 $subnet = New-AzureRmVirtualNetworkSubnetConfig `
-    -Name "Subnet" `
+    -Name "Nova-Subnet" `
     -AddressPrefix 10.0.0.0/24
 
 Write-Output "Create a virtual network"
@@ -47,7 +47,7 @@ $vmssConfig = New-AzureRmVmssConfig `
     -Location $Location `
     -SkuCapacity 3 `
     -SkuName "Standard_DS2" `
-    -UpgradePolicyMode Manual 
+    -UpgradePolicyMode Automatic 
 
 Write-Output "Set the VM image"
 $image = Get-AzureRMImage -ImageName $ManagedImageName -ResourceGroupName $ManagedImageResourceGroupName
@@ -109,9 +109,9 @@ $myRuleScaleIn = New-AzureRmAutoscaleRule `
     -ScaleActionValue 1
   
 $myScaleProfile = New-AzureRmAutoscaleProfile `
-    -DefaultCapacity 1  `
+    -DefaultCapacity 2  `
     -MaximumCapacity 10 `
-    -MinimumCapacity 1 `
+    -MinimumCapacity 2 `
     -Rule $myRuleScaleOut, $myRuleScaleIn `
     -Name "Nova-autoscale-profile"
   
