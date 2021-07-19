@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  name: default
+  name: Default
 
 variables:
 - name: AzureSubscription
