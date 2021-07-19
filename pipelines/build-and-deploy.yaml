@@ -5,7 +5,7 @@ pool:
 
 variables:
 - name: AzureSubscription
-  value: 'logicapp-spn'
+  value: 'SPNforAgentpool'
 
 steps:
 - task: AzurePowerShell@2
